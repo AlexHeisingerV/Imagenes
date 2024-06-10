@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personaliza Tu Canillera</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <h2 class="text-center mt-4">Personaliza Tu Canillera</h2>
+    <input accept="image/*" type="file" name="image" id="input" class="form-control mt-4">
+    <button id="btn" class="btn btn-primary mt-4">Generar imagen</button>
+    <br>
+    <label for="text" class="form-label mt-4">Texto:</label>
+    <input type="text" class="form-control" id="text" placeholder="Ingrese su texto">
+    <button id="addText" class="btn btn-success mt-2">Agregar texto</button>
+    <br>
+    <label for="fontFamily" class="form-label mt-4">Fuente:</label>
+    <select id="fontFamily" class="form-select">
+      <option value="Arial">Arial</option>
+      <option value="Verdana">Verdana</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <!-- Agrega más opciones de fuente si es necesario -->
+    </select>
+    <label for="fontSize" class="form-label mt-2">Tamaño:</label>
+    <input type="number" class="form-control" id="fontSize" placeholder="Tamaño" min="10" max="100" value="20">
+    <button id="applyStyle" class="btn btn-primary mt-2">Aplicar estilo</button>
+    <canvas id="canvas" class="mt-4"></canvas>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const canvas = new fabric.Canvas("canvas");
+      let defaultImg;
+
+      // Cargar la imagen por defecto y ajustar el tamaño del canvas
+      const defaultImgSrc = 'https://i.ibb.co/YkmWwNw/Plantilla-Canillera.png';
+      
+      fabric.Image.fromURL(defaultImgSrc, (img) => {
+        img.set({
+          selectable: false,
+          evented: false,
+          originX: 'left',
+          originY: 'top',
+          top: 0,
+          left: 0 // Posicionamos en la esquina superior izquierda
+        });
+        defaultImg = img;
+        canvas.setWidth(img.width);
+        canvas.setHeight(img.height);
+        canvas.setOverlayImage(defaultImg, canvas.renderAll.bind(canvas)); // Establecer la imagen por defecto como imagen superpuesta
+      });
+
+      input.onchange = (evnt) => {
+        const file = evnt.target.files[0];
+        const url = URL.createObjectURL(file);
+        const imgNode = new Image();
+        imgNode.crossOrigin = "anonymous";
+        imgNode.src = url;
+        imgNode.onload = () => {
+          const img = new fabric.Image(imgNode, {
+            left: 0,
+            top: 0,
+            angle: 0,
+            opacity: 1,
+          });
+          
+          canvas.add(img); // Añadir la imagen cargada al canvas
+        };
+      };
+
+      document.getElementById("addText").addEventListener("click", () => {
+        const textValue = document.getElementById('text').value;
+        const text = new fabric.Text(textValue, {
+          left: 100,
+          top: 100,
+          fontSize: parseInt(document.getElementById('fontSize').value),
+          fontFamily: document.getElementById('fontFamily').value,
+          fill: '#000' // Color de texto predeterminado
+        });
+        canvas.add(text); // Agregar texto al canvas
+      });
+
+      document.getElementById("applyStyle").addEventListener("click", () => {
+        const activeObject = canvas.getActiveObject();
+        if (activeObject && activeObject.type === 'text') {
+          activeObject.set({
+            fontSize: parseInt(document.getElementById('fontSize').value),
+            fontFamily: document.getElementById('fontFamily').value,
+          });
+          canvas.renderAll(); // Vuelve a renderizar el canvas para aplicar los cambios
+        }
+      });
+
+      document.getElementById("btn").addEventListener("click", () => {
+        const dataURL = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.download = "Canillera.png";
+        a.href = dataURL;
+        a.click();
+      });
+    });
+  </script>
+</body>
+
+</html>
